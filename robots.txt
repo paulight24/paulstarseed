@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://paulight24.github.io/paulstarseed/sitemap.xml
+Sitemap: https://paulstarseed.com/sitemap.xml
