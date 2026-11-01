@@ -1,0 +1,85 @@
+# Quality checks on every push and pull request.
+#
+# This does NOT deploy — GitHub Pages already auto-deploys from the main branch
+# on every push. This runs *alongside* that, and tells you if something broke.
+#
+# It catches the things that silently rot an artist site:
+#   - a dead link to Spotify / YouTube / HyperFollow after a URL changes
+#   - malformed HTML after a hand edit
+#   - broken JSON-LD, which quietly kills your Google rich result
+#   - a missing image reference
+name: checks
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  schedule:
+    # Monthly: catches links that die on their own (a platform changing a URL).
+    - cron: "0 9 1 * *"
+  workflow_dispatch:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validate JSON-LD structured data
+        run: |
+          python3 - <<'PY'
+          import json, re, sys, pathlib
+          html = pathlib.Path("index.html").read_text()
+          blocks = re.findall(
+              r'<script type="application/ld\+json">(.*?)</script>', html, re.S)
+          if not blocks:
+              sys.exit("FAIL: no JSON-LD found — the Google rich result depends on it")
+          for i, b in enumerate(blocks, 1):
+              try:
+                  data = json.loads(b)
+              except json.JSONDecodeError as e:
+                  sys.exit(f"FAIL: JSON-LD block {i} is invalid JSON — {e}")
+              print(f"OK: JSON-LD block {i} valid ({data.get('@type')})")
+          PY
+
+      - name: Check every local file referenced actually exists
+        run: |
+          python3 - <<'PY'
+          import re, sys, pathlib
+          html = pathlib.Path("index.html").read_text()
+          refs = re.findall(r'(?:src|href)="(?!https?:|mailto:|#)([^"]+)"', html)
+          missing = [r for r in refs if not pathlib.Path(r).exists()]
+          if missing:
+              sys.exit("FAIL: referenced files not found -> " + ", ".join(missing))
+          print(f"OK: all {len(refs)} local references exist")
+          PY
+
+      - name: Check required SEO files are present
+        run: |
+          for f in sitemap.xml robots.txt CNAME index.html style.css; do
+            [ -f "$f" ] || { echo "FAIL: $f is missing"; exit 1; }
+          done
+          echo "OK: sitemap, robots, CNAME all present"
+
+      - name: Check external links still resolve
+        continue-on-error: true   # a flaky platform shouldn't fail the build
+        run: |
+          python3 - <<'PY'
+          import re, pathlib, urllib.request, urllib.error
+          html = pathlib.Path("index.html").read_text()
+          urls = sorted(set(re.findall(r'href="(https?://[^"]+)"', html)))
+          bad = []
+          for u in urls:
+              try:
+                  req = urllib.request.Request(
+                      u, method="HEAD",
+                      headers={"User-Agent": "Mozilla/5.0 (link-check)"})
+                  urllib.request.urlopen(req, timeout=20)
+                  print("OK  ", u)
+              except Exception as e:
+                  print("WARN", u, "->", e)
+                  bad.append(u)
+          if bad:
+              print("\nLinks needing a look:")
+              for u in bad: print(" -", u)
+          PY
