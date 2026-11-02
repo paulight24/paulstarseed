@@ -74,6 +74,32 @@ It's already wired into `index.html`. Nothing more to do — though it's worth s
 the form once yourself after deploying, to confirm the email lands and isn't filtered
 to spam.
 
+### The visitor never leaves the site
+
+A plain HTML form post hands the visitor to Formspree's own thank-you page — their
+branding, their navigation, and a click needed to get back. That is a bad last impression
+on the one page whose job is to turn a visitor into a booking.
+
+So the form is submitted over **Formspree's JSON API** instead: the page intercepts the
+submit, posts in the background, and swaps the form for a confirmation panel in the site's
+own styling. No redirect, no Formspree branding, nothing to click to get back.
+
+This is **progressive enhancement** — the `action` and `method` attributes are still on the
+`<form>` tag. If JavaScript is off or fails to load, the browser posts normally and
+Formspree's page handles it. **Do not remove those two attributes.**
+
+Three states, all verified:
+
+| State | What the visitor sees |
+|---|---|
+| Sending | Button reads "Sending…" and is disabled, so it can't be double-submitted |
+| Success | Gold panel: *"Invitation received"* — form removed, focus moved to the panel for screen readers |
+| Failure | Red line under the button with Formspree's reason; everything they typed is preserved and the button re-enables |
+
+⚠️ **This depends on reCAPTCHA being OFF** in the Formspree form settings. With reCAPTCHA
+on, a background submission is rejected because there's no challenge to solve. The hidden
+`_gotcha` honeypot field is doing the spam filtering instead.
+
 ### How you get notified
 An email to the inbox the Formspree account uses, every time someone submits. Submissions
 are also stored in the Formspree dashboard as a backup, so nothing is lost if an email

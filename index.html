@@ -203,6 +203,8 @@
            Submissions email paulstarseed1@gmail.com and are also stored at
            formspree.io/forms/xeaargwj/submissions as a backup.
            Free tier: 50 submissions/month.
+           Submitted over Formspree's JSON API so the visitor never leaves this page.
+           The action/method below are the no-JavaScript fallback - do not remove them.
            See website/README.md § "Booking form". -->
       <form class="booking" action="https://formspree.io/f/xeaargwj" method="POST">
         <div class="row">
@@ -228,6 +230,7 @@
         <!-- honeypot: bots fill this, humans never see it -->
         <input type="text" name="_gotcha" tabindex="-1" autocomplete="off" aria-hidden="true">
         <button class="btn btn-primary" type="submit">Send invitation</button>
+        <p class="form-status" role="status" aria-live="polite" hidden></p>
       </form>
       <!-- The email address is deliberately NOT published here. Scraper bots harvest
            any mailto: on a public page and it becomes permanent spam. The form reaches
@@ -255,6 +258,71 @@
 </footer>
 
 <script>document.getElementById('yr').textContent = new Date().getFullYear();</script>
+
+<!-- Booking form: submit over Formspree's JSON API so the visitor stays on this page.
+     Progressive enhancement - with JavaScript off, the form's own action/method still
+     post normally and Formspree shows its own confirmation page. -->
+<script>
+(function () {
+  var form = document.querySelector('.booking');
+  if (!form || !window.fetch || !form.replaceWith) return;   // fall back to a normal POST
+
+  var status = form.querySelector('.form-status');
+  var button = form.querySelector('button[type="submit"]');
+  var label  = button.textContent;
+
+  function fail(message) {
+    status.textContent = message;
+    status.className = 'form-status is-error';
+    status.hidden = false;
+    button.disabled = false;
+    button.textContent = label;
+  }
+
+  form.addEventListener('submit', function (event) {
+    event.preventDefault();
+    status.hidden = true;
+    button.disabled = true;
+    button.textContent = 'Sending\u2026';
+
+    fetch(form.action, {
+      method: 'POST',
+      body: new FormData(form),
+      headers: { 'Accept': 'application/json' }
+    })
+    .then(function (response) {
+      return response.json()
+        .catch(function () { return {}; })
+        .then(function (data) { return { ok: response.ok, data: data }; });
+    })
+    .then(function (result) {
+      if (!result.ok) {
+        throw new Error((result.data.errors || [])
+          .map(function (e) { return e.message; })
+          .join('. ') || 'That didn\u2019t send.');
+      }
+      var done = document.createElement('div');
+      done.className = 'form-done';
+      done.setAttribute('role', 'status');
+      done.setAttribute('tabindex', '-1');
+      done.innerHTML =
+        '<h3>Invitation received<\/h3>' +
+        '<p>Thank you. Your message has reached PaulStarSeed directly ' +
+        '&mdash; you&rsquo;ll get a reply.<\/p>';
+      // the standing reassurance below the form now just repeats the panel
+      var note = document.querySelector('.fallback');
+      if (note) note.hidden = true;
+      form.replaceWith(done);
+      done.focus();
+    })
+    .catch(function (error) {
+      var message = error.message;
+      if (!/[.!?]$/.test(message)) message += '.';
+      fail(message + ' Please try again in a moment.');
+    });
+  });
+})();
+</script>
 
 <!-- Cloudflare Web Analytics - privacy-first, no cookies, no consent banner needed -->
 <script type='module' src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "4cca1ba55ddd4536af7e286d4065ac9d"}'></script>

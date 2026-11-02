@@ -188,3 +188,16 @@ footer{background:var(--bg-alt);border-top:1px solid var(--line);padding:56px 0 
   .booking .row{grid-template-columns:1fr}
   .booking button{width:100%;justify-self:stretch}
 }
+
+/* Inline result of the booking form - see the submit handler in index.html */
+.form-status{margin:.2rem 0 0;font-size:.88rem;color:var(--muted)}
+.form-status.is-error{color:#e2857a}
+.form-done{
+  margin:2.2rem 0 1rem;max-width:34rem;padding:1.7rem 1.9rem;
+  border:1px solid var(--gold);background:rgba(214,178,94,.06);outline:none;
+}
+.form-done h3{
+  font-family:"Cormorant Garamond",Georgia,serif;
+  font-size:1.55rem;font-weight:600;margin:0 0 .5rem;color:var(--gold);
+}
+.form-done p{margin:0;color:#c6c0b7}
