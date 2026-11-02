@@ -96,9 +96,30 @@ Three states, all verified:
 | Success | Gold panel: *"Invitation received"* — form removed, focus moved to the panel for screen readers |
 | Failure | Red line under the button with Formspree's reason; everything they typed is preserved and the button re-enables |
 
-⚠️ **This depends on reCAPTCHA being OFF** in the Formspree form settings. With reCAPTCHA
-on, a background submission is rejected because there's no challenge to solve. The hidden
-`_gotcha` honeypot field is doing the spam filtering instead.
+⚠️ **This depends on CAPTCHA being OFF** in the Formspree form settings (it is — checked
+2026-11-02). With it on, a background submission is rejected because there's no challenge
+to solve. Spam is handled instead by Formshield, Formspree's server-side filter, plus the
+hidden `_gotcha` honeypot field.
+
+Ignore the **"HTTP API — Upgrade to Professional"** toggle on that settings page. That is
+for *reading* submissions programmatically. Submitting over the JSON API is free.
+
+### ✅ End-to-end delivery test — 2026-11-02
+
+A real submission was sent through the live site and traced the whole way:
+
+| Step | Result |
+|---|---|
+| Submit on paulstarseed.com | `POST https://formspree.io/f/xeaargwj` → **200** |
+| Page behaviour | Stayed on `paulstarseed.com/#invite`, confirmation panel shown, no redirect |
+| Formspree archive | Recorded, marked delivered, **not** flagged as spam |
+| Email | Arrived in **paulstarseed1@gmail.com → Inbox** (not spam), subject *"Ministration invitation — PaulStarSeed website"*, all fields intact |
+| **Reply-To** | Replying goes to **the enquirer's address**, not `noreply@formspree.io` — so you can just hit Reply |
+
+That last row is the one that matters day to day: when a church writes in, Reply reaches
+them directly. Nothing extra to configure.
+
+The test submission is still in the inbox and the Formspree archive; delete it whenever.
 
 ### How you get notified
 An email to the inbox the Formspree account uses, every time someone submits. Submissions
