@@ -151,6 +151,43 @@ If you buy `paulstarseed.com`, find-and-replace `paulstarseed.github.io` through
 
 ---
 
+## 📊 Analytics — who is actually visiting
+
+### ✅ Cloudflare Web Analytics — live since 2026-11-02
+
+| | |
+|---|---|
+| Dashboard | dash.cloudflare.com → Observability → Analytics → **Web analytics** |
+| Cloudflare account | Emmpowered4wealth@gmail.com (the one that owns the domain) |
+| Site | paulstarseed.com |
+| Install method | **Manual JS snippet** (bottom of `index.html`) |
+| Verified | `POST https://cloudflareinsights.com/cdn-cgi/rum` → `204` |
+
+**Why the manual snippet and not "automatic setup".** Cloudflare's automatic install
+injects the beacon as traffic passes *through* Cloudflare's proxy. Our DNS records are
+deliberately **DNS-only (grey cloud)** — that is what lets GitHub Pages issue and renew
+its own Let's Encrypt certificate. So no traffic passes through the proxy, and automatic
+injection would silently record nothing. The snippet in the page does the job instead.
+
+⚠️ **If anyone ever switches the DNS records to proxied (orange cloud)** to "turn on
+Cloudflare properly", the GitHub Pages certificate breaks and the site goes to an SSL
+error. Leave them grey.
+
+**No cookie banner needed.** Cloudflare Web Analytics sets no cookies and does not
+fingerprint or track individuals, so it falls outside UK/EU consent requirements. This is
+the main reason it was chosen over Google Analytics for a site this size.
+
+### What it will and won't tell you
+Page views, visits, referrers, countries, device types, and Core Web Vitals. It will
+**not** tell you which individual visited, or follow them across sites. For deciding
+*"did the Instagram post actually send anyone to the site?"* — which is the real question
+— that is enough.
+
+### Data takes ~30 minutes to first appear
+A brand-new site shows zeros at first. That is normal, not a broken install.
+
+---
+
 ## Deploying free on GitHub Pages
 
 1. Create a repo named exactly **`paulstarseed.github.io`**.
