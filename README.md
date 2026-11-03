@@ -200,6 +200,9 @@ If you buy `paulstarseed.com`, find-and-replace `paulstarseed.github.io` through
 
 ## 📊 Analytics — who is actually visiting
 
+Two analytics systems run side by side. They answer different questions and do not
+conflict.
+
 ### ✅ Cloudflare Web Analytics — live since 2026-11-02
 
 | | |
@@ -223,6 +226,43 @@ error. Leave them grey.
 **No cookie banner needed.** Cloudflare Web Analytics sets no cookies and does not
 fingerprint or track individuals, so it falls outside UK/EU consent requirements. This is
 the main reason it was chosen over Google Analytics for a site this size.
+
+### ✅ Google Analytics 4 — live since 2026-11-02
+
+| | |
+|---|---|
+| Google account | **paulstarseed1@gmail.com** |
+| Account / property | PaulStarSeed / **paulstarseed.com** |
+| Stream | PaulStarSeed website |
+| Measurement ID | **G-HK7S5WYBXG** |
+| Tag location | High in `<head>` of `index.html`, as Google requires |
+| Verified | Page view confirmed in **Realtime** |
+
+**Enhanced measurement is on.** Beyond page views that adds scrolls, file downloads,
+site search, video engagement and — the useful one here — **outbound clicks**. That is
+what tells you how many visitors actually click through to Spotify, YouTube or
+HyperFollow, rather than just landing and leaving.
+
+**A note on the 503s.** While testing, `google-analytics.com/g/collect` returned `503` on
+each hit, yet the page views appeared in Realtime anyway. The tag is firing with the
+correct `tid=G-HK7S5WYBXG`. If reports ever look empty, check Realtime first before
+assuming the tag is broken.
+
+### ⚠️ GA4 sets cookies — Cloudflare does not
+
+This is the trade-off that was accepted when GA4 went on. Cloudflare Web Analytics is
+cookieless and needs no consent banner; GA4 profiles visitors and, for UK/EU visitors,
+legally expects a consent banner before it runs.
+
+Nothing has been built for that yet. The options, in order of effort:
+
+1. **Leave it.** Reasonable while the audience is largely US — but the stated goal is
+   "all nations", and EU/UK visitors are exactly who this gap concerns.
+2. **Add a consent banner** and gate the GA4 tag behind it. Cloudflare keeps working
+   either way, so the numbers never go dark.
+3. **Remove GA4** and keep Cloudflare only. One commit — delete the block from `<head>`.
+
+Worth revisiting once there is real international traffic to measure.
 
 ### What it will and won't tell you
 Page views, visits, referrers, countries, device types, and Core Web Vitals. It will
